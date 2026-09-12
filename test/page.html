@@ -1,0 +1,62 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Speed controller test page</title>
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 24px; max-width: 900px }
+  section { margin-bottom: 28px }
+  h2 { font-size: 15px; margin: 0 0 6px }
+  .rate { font-weight: 600 }
+  iframe { border: 1px solid #ccc; width: 344px; height: 264px }
+</style>
+
+<h1>Speed controller test page</h1>
+<p>Press <kbd>]</kbd> / <kbd>[</kbd> / <kbd>\</kbd>. Every readout below should move together,
+and the frame counter in each clip should visibly speed up.</p>
+
+<section>
+  <h2>1. Plain video — rate <span class="rate" id="r1">1</span></h2>
+  <video id="v1" src="clip.mp4" controls loop></video>
+</section>
+
+<section>
+  <h2>2. Inside a shadow root — rate <span class="rate" id="r2">1</span></h2>
+  <div id="shadow-host"></div>
+</section>
+
+<section>
+  <h2>3. Inside an iframe (about:srcdoc) — rate <span class="rate" id="r3">1</span></h2>
+  <iframe id="f1" srcdoc='<video src="clip.mp4" controls loop></video>'></iframe>
+</section>
+
+<section>
+  <h2>4. Typing here must NOT change speed</h2>
+  <input placeholder="type ] and [ in me"> <span contenteditable style="border:1px solid #ccc;padding:4px 8px">or in me</span>
+</section>
+
+<section>
+  <h2>5. Added after load, like a single-page-app navigation</h2>
+  <button id="add">Add a video now</button>
+  <div id="late"></div>
+  <p>Set a speed first, then click. The new clip should start at that speed, not 1x.</p>
+</section>
+
+<script>
+  const v2 = document.createElement('video');
+  v2.src = 'clip.mp4'; v2.controls = true; v2.loop = true;
+  document.getElementById('shadow-host').attachShadow({ mode: 'open' }).appendChild(v2);
+
+  document.getElementById('add').onclick = () => {
+    const v = document.createElement('video');
+    v.src = 'clip.mp4'; v.controls = true; v.loop = true; v.autoplay = true;
+    document.getElementById('late').replaceChildren(v);
+  };
+
+  // Poll rather than listen, so the readout is independent of the extension's events.
+  const f1 = document.getElementById('f1');
+  setInterval(() => {
+    r1.textContent = document.getElementById('v1').playbackRate;
+    r2.textContent = v2.playbackRate;
+    const fv = f1.contentDocument && f1.contentDocument.querySelector('video');
+    r3.textContent = fv ? fv.playbackRate : '—';
+  }, 200);
+</script>
