@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Presto</title>
+<link rel="stylesheet" href="popup.css">
+
+<header>
+  <img src="../icons/icon32.png" alt="" width="24" height="24">
+  <h1>Presto</h1>
+</header>
+
+<section>
+  <h2 id="step-label">Step size</h2>
+  <p class="hint">How far <kbd>[</kbd> and <kbd>]</kbd> move the speed each press.</p>
+  <div class="steps" role="radiogroup" aria-labelledby="step-label"></div>
+</section>
+
+<section>
+  <h2>Shortcuts</h2>
+  <dl>
+    <dt><kbd>]</kbd></dt><dd>Faster by one step</dd>
+    <dt><kbd>[</kbd></dt><dd>Slower by one step</dd>
+    <dt><kbd>\</kbd></dt><dd>Toggle 1x and your last speed</dd>
+    <dt><kbd>;</kbd></dt><dd>Cycle the step size</dd>
+  </dl>
+</section>
+
+<footer>Works on every video and audio element, in any frame. Speed holds from
+0.25x to 16x.</footer>
+
+<script src="steps.js"></script>
+<script src="popup.js"></script>

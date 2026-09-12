@@ -1,19 +1,46 @@
-// Universal video speed controller.
-// Keys: [ slower, ] faster, \ reset/restore. Or use the on-video control.
+// Presto: playback speed control for any video or audio, on any site.
+// Keys: [ slower, ] faster, \ reset/restore, ; change the step size.
+// Or use the on-video control.
 //
 // Every frame runs its own copy of this script, isolated from the others, so a
 // key pressed in one frame can't reach a video in another. All speed changes are
 // therefore relayed to the top frame, which owns the speed and broadcasts it
 // back down to every frame. Nothing applies a speed except on a broadcast.
-const STEP = 0.25, MIN = 0.1, MAX = 16;
+// STEPS, DEFAULT_STEP and STEP_KEY come from steps.js, loaded before this.
+const MIN = 0.25, MAX = 16;
 const isTop = window.top === window;
 
-// Only non-DOM logic worth testing. See test.js.
+// The only non-DOM logic, and the only part worth unit testing. See test/unit.js.
 function nextSpeed(current, delta) {
   return Math.round(Math.min(MAX, Math.max(MIN, current + delta)) * 100) / 100;
 }
 
-let desired = 1, previous = 1;
+// Cycles through the step sizes, and recovers to the first one if `current`
+// somehow isn't in the list.
+function nextStep(current) {
+  return STEPS[(STEPS.indexOf(current) + 1) % STEPS.length];
+}
+
+// The top frame owns all three. Child frames keep copies only to render them.
+let desired = 1, previous = 1, step = DEFAULT_STEP;
+
+// The step is a saved setting, edited from the popup or cycled with a key. Any
+// frame may fail to reach extension storage, in which case the default stands
+// and the keys still work.
+function saveStep(value) {
+  try { chrome.storage.sync.set({ [STEP_KEY]: value }); } catch (e) { /* default stands */ }
+}
+
+try {
+  chrome.storage.sync.get({ [STEP_KEY]: DEFAULT_STEP }, saved => {
+    if (chrome.runtime.lastError) return;
+    if (STEPS.includes(saved[STEP_KEY])) { step = saved[STEP_KEY]; sync(); }
+  });
+  chrome.storage.onChanged.addListener(changes => {
+    const c = changes[STEP_KEY];
+    if (c && STEPS.includes(c.newValue)) { step = c.newValue; flashStep(); }
+  });
+} catch (e) { /* default stands */ }
 
 // ponytail: walks every element looking for shadow roots. Runs on media events
 // and speed changes, not on a timer. Cache a registry if it ever bites.
@@ -36,8 +63,9 @@ function pin(el) {
   });
 }
 
-function apply(speed) {
+function apply(speed, atStep) {
   desired = speed;
+  step = atStep ?? step;  // any page can post to us; don't let it clear the step
   for (const el of allMedia(document)) {
     pin(el);
     if (el.playbackRate !== speed) el.playbackRate = speed;
@@ -48,7 +76,8 @@ function apply(speed) {
 
 // --- cross-frame relay ---------------------------------------------------
 
-function request(delta) { window.top.postMessage({ __vsc: 'key', delta }, '*'); }
+// Child frames send a direction, never a size: the step belongs to the top frame.
+function request(dir) { window.top.postMessage({ __vsc: 'key', dir }, '*'); }
 
 function broadcast(msg, win = window.top) {
   win.postMessage(msg, '*');
@@ -59,14 +88,20 @@ function broadcast(msg, win = window.top) {
 addEventListener('message', e => {
   const m = e.data;
   if (!m || typeof m !== 'object') return;
-  if (m.__vsc === 'set') apply(m.speed);
-  else if (m.__vsc === 'key' && isTop) {
-    let speed;
-    if (m.delta === 'toggle') {
+  if (m.__vsc === 'set') {
+    apply(m.speed, m.step);
+    if (m.flash) flashStep();
+  } else if (m.__vsc === 'key' && isTop) {
+    let speed = desired;
+    if (m.dir === 'step') saveStep(step = nextStep(step));
+    else if (m.dir === 'toggle') {
       speed = desired === 1 ? previous : 1;
       if (desired !== 1) previous = desired;
-    } else speed = nextSpeed(desired, m.delta);
-    broadcast({ __vsc: 'set', speed });
+    } else speed = nextSpeed(desired, m.dir * step);
+    // Claim the new values now. The broadcast round trip is asynchronous, so
+    // waiting for them back would make rapid key presses collapse into one.
+    desired = speed;
+    broadcast({ __vsc: 'set', speed, step, flash: m.dir === 'step' });
   }
 });
 
@@ -90,29 +125,62 @@ function mount(el) {
   const host = document.createElement('div');
   host.style.cssText = 'position:fixed;z-index:2147483647;display:none';
   const root = host.attachShadow({ mode: 'closed' });
-  root.innerHTML =
-    `<style>${CSS}</style><div class="bar">` +
-    `<button data-d="-1">&lt;&lt;</button>` +
-    `<div class="val">1x</div>` +
-    `<button data-d="1">&gt;&gt;</button></div>`;
+  // Built node by node rather than with innerHTML: Mozilla's add-on linter
+  // rejects innerHTML assignment outright, even for a constant string.
+  const style = document.createElement('style');
+  style.textContent = CSS;
+
+  const bar = document.createElement('div');
+  bar.className = 'bar';
+
+  const slower = document.createElement('button');
+  slower.textContent = '<<';
+  slower.dataset.d = '-1';
+  slower.title = 'Slower  [';
+
+  const val = document.createElement('div');
+  val.className = 'val';
+  val.textContent = '1x';
+
+  const faster = document.createElement('button');
+  faster.textContent = '>>';
+  faster.dataset.d = '1';
+  faster.title = 'Faster  ]';
+
+  bar.append(slower, val, faster);
+  root.append(style, bar);
   root.addEventListener('click', e => {
     const t = e.target.closest('button,.val');
     if (!t) return;
     e.preventDefault();
     e.stopPropagation();  // don't let the click reach the player underneath
-    request(t.dataset.d ? Number(t.dataset.d) * STEP : 'toggle');
+    request(t.dataset.d ? Number(t.dataset.d) : 'toggle');
   });
   overlays.set(el, host);
-  host.__val = root.querySelector('.val');
+  host.__val = val;
   // Players resize without a window resize: theater mode, rotation, layout shift.
   host.__ro = new ResizeObserver(sync);
   host.__ro.observe(el);
   place(el, host);
 }
 
+// Changing the step has nothing to show in the speed, so the readout borrows
+// itself for a moment to report the new step size instead.
+let flashUntil = 0, flashTimer;
+function flashStep() {
+  flashUntil = Date.now() + 1200;
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(sync, 1250);
+  sync();
+}
+
 function label(el) {
   const host = overlays.get(el);
-  if (host) host.__val.textContent = `${Math.round(el.playbackRate * 100) / 100}x`;
+  if (!host) return;
+  host.__val.textContent = Date.now() < flashUntil
+    ? `±${step}`
+    : `${Math.round(el.playbackRate * 100) / 100}x`;
+  host.__val.title = `Step ${step}, press ; to change it. Click to reset to 1x.`;
 }
 
 function place(el, host) {
@@ -179,13 +247,14 @@ addEventListener('keydown', e => {
   const t = e.target;
   if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
 
-  let delta;
-  if (e.key === ']') delta = STEP;
-  else if (e.key === '[') delta = -STEP;
-  else if (e.key === '\\') delta = 'toggle';
+  let dir;
+  if (e.key === ']') dir = 1;
+  else if (e.key === '[') dir = -1;
+  else if (e.key === '\\') dir = 'toggle';
+  else if (e.key === ';') dir = 'step';
   else return;
 
   e.preventDefault();
   e.stopPropagation();  // YouTube and Netflix bind keys on their own handlers.
-  request(delta);
+  request(dir);
 }, true);

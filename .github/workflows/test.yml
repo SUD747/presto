@@ -14,8 +14,8 @@ jobs:
         with:
           node-version: 22
       - name: Check the extension parses
-        run: node --check content.js
+        run: node --check src/content.js
       - name: Check the manifest is valid JSON
         run: node -e "JSON.parse(require('fs').readFileSync('manifest.json'))"
       - name: Unit tests
-        run: node test.js
+        run: node test/unit.js
