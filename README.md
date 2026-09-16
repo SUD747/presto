@@ -1,8 +1,9 @@
 # Presto
 
 Playback speed control for every video and audio element on the web, not just
-YouTube. It works inside embedded players and holds your speed through ad
-breaks, quality switches and single-page navigation.
+YouTube. It works inside embedded players, holds your speed through ad breaks,
+quality switches and single-page navigation, and remembers it for the next
+video you open.
 
 ![the control sits in the corner of the video](docs/screenshot.png)
 
@@ -21,6 +22,11 @@ back again. It fades when you are not pointing at it.
 
 Speed ranges from 0.25x to 16x. Chrome mutes audio above roughly 4x, which is
 the browser's behaviour, not this extension's.
+
+The speed is remembered. Set a lecture to 2x and the next video starts at 2x
+rather than dropping back to normal, so there is nothing to set again each time.
+Press `\` or click the speed readout to return to 1x, which is remembered the
+same way.
 
 ![the popup, listing the step sizes and the shortcuts](docs/popup.png)
 

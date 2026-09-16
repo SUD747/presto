@@ -5,14 +5,24 @@
 // Every frame runs its own copy of this script, isolated from the others, so a
 // key pressed in one frame can't reach a video in another. All speed changes are
 // therefore relayed to the top frame, which owns the speed and broadcasts it
-// back down to every frame. Nothing applies a speed except on a broadcast.
+// back down to every frame. No frame applies a speed of its own accord, with one
+// exception: at load each frame restores the last saved speed from storage
+// itself, because an iframe that starts late would otherwise miss the broadcast.
 // STEPS, DEFAULT_STEP and STEP_KEY come from steps.js, loaded before this.
 const MIN = 0.25, MAX = 16;
+const SPEED_KEY = 'speed';
 const isTop = window.top === window;
 
 // The only non-DOM logic, and the only part worth unit testing. See test/unit.js.
 function nextSpeed(current, delta) {
   return Math.round(Math.min(MAX, Math.max(MIN, current + delta)) * 100) / 100;
+}
+
+// Storage can hand back anything: a value written by an older version, a
+// half-synced profile, or nothing at all. Only a number the browser would
+// actually accept as a rate is trusted; everything else means normal speed.
+function validSpeed(value) {
+  return typeof value === 'number' && value >= MIN && value <= MAX ? value : 1;
 }
 
 // Cycles through the step sizes, and recovers to the first one if `current`
@@ -31,10 +41,26 @@ function saveStep(value) {
   try { chrome.storage.sync.set({ [STEP_KEY]: value }); } catch (e) { /* default stands */ }
 }
 
+// Remembering the speed is what makes the next video start where the last one
+// left off. Debounced: holding ] fires a change per press, and storage.sync
+// rejects writes past a per-minute quota. Losing the timer mid-burst is fine,
+// the speed is still applied, only the record of it is late.
+let speedTimer;
+function saveSpeed(value) {
+  clearTimeout(speedTimer);
+  speedTimer = setTimeout(() => {
+    try { chrome.storage.sync.set({ [SPEED_KEY]: value }); } catch (e) { /* speed still applies */ }
+  }, 500);
+}
+
 try {
-  chrome.storage.sync.get({ [STEP_KEY]: DEFAULT_STEP }, saved => {
+  chrome.storage.sync.get({ [STEP_KEY]: DEFAULT_STEP, [SPEED_KEY]: 1 }, saved => {
     if (chrome.runtime.lastError) return;
-    if (STEPS.includes(saved[STEP_KEY])) { step = saved[STEP_KEY]; sync(); }
+    if (STEPS.includes(saved[STEP_KEY])) step = saved[STEP_KEY];
+    // Every frame restores the speed for itself rather than waiting on a
+    // broadcast from the top frame, so an iframe that loads late cannot miss it.
+    const speed = validSpeed(saved[SPEED_KEY]);
+    if (speed !== 1) apply(speed); else sync();
   });
   chrome.storage.onChanged.addListener(changes => {
     const c = changes[STEP_KEY];
@@ -101,6 +127,9 @@ addEventListener('message', e => {
     // Claim the new values now. The broadcast round trip is asynchronous, so
     // waiting for them back would make rapid key presses collapse into one.
     desired = speed;
+    // Only the top frame reaches here, so the speed is recorded once. Other
+    // open tabs deliberately do not follow along; they pick it up next load.
+    if (m.dir !== 'step') saveSpeed(speed);
     broadcast({ __vsc: 'set', speed, step, flash: m.dir === 'step' });
   }
 });
@@ -215,6 +244,9 @@ function sync() {
 function scan() {
   for (const el of allMedia(document)) {
     pin(el);
+    // Media already in the DOM may never fire another loadedmetadata, so this
+    // is the path that gets a restored speed onto it.
+    if (desired !== 1 && el.playbackRate !== desired) el.playbackRate = desired;
     if (el.tagName === 'VIDEO') mount(el);
   }
   sync();

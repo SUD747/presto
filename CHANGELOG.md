@@ -3,6 +3,15 @@
 Notable changes to Presto. Versions follow [semantic versioning](https://semver.org),
 and every submission to an add-on store needs a new version number.
 
+## Unreleased
+
+### Added
+
+- The playback speed is remembered. Set a video to 2x and the next video you
+  open starts at 2x, instead of back at normal speed. Press `\` or click the
+  speed readout to return to 1x, which is remembered in the same way. The speed
+  follows your browser profile alongside the step size.
+
 ## 1.0.0 — 2026-09-15
 
 First release, published on [addons.mozilla.org](https://addons.mozilla.org/en-US/firefox/addon/presto-video-speed-control/).
