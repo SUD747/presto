@@ -33,7 +33,7 @@ rather than dropping back to normal, so there is nothing to set again each time.
 Press `\` or click the speed readout to return to 1x, which is remembered the
 same way.
 
-![the popup, listing the step sizes and the shortcuts](docs/popup.png)
+![the popup, with the step sizes and a rebindable key for each shortcut](docs/popup.png)
 
 The step defaults to 0.25. Set it from the toolbar popup, or cycle it with `;`
 through 0.05, 0.1, 0.25, 0.5 and 1. Either way the choice is saved and follows

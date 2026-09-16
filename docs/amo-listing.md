@@ -208,17 +208,30 @@ Access to a page is not the same as collecting anything from it. Presto has no a
 The whole source is on GitHub under the MIT license, and it is short enough to read: https://github.com/SUD747/presto
 ```
 
-## Screenshots — DEFERRED
+## Screenshots — LIVE IN THE REPO, NOT YET UPLOADED
 
-Published today:
+Three, all 1280x800 so the carousel is not ragged, all generated from the real
+extension rather than mocked up. Upload in this order:
 
-1. `docs/screenshot.png` — the control on a video
-2. `docs/popup.png` — the settings popup
+1. `docs/screenshot.png` — the control on a video, reading 2x
+2. `docs/store-popup.png` — the popup: step sizes and the rebindable shortcuts
+3. `docs/store-embedded.png` — the control inside an embedded player
 
-Both are due for replacement and the analysis is in the growth plan, not here.
-The short version: preview 1 uses third-party video content and the control is
-invisible at thumbnail size; preview 2 is portrait and far narrower than
-preview 1, so the carousel looks ragged. Deliberately not being changed yet.
+The previews currently published are the old pair and should be replaced.
+
+These fix the problems recorded earlier: the old preview 1 used third-party
+video content with a hand-drawn arrow and the control was invisible at thumbnail
+size, and preview 2 was portrait and a quarter the width of preview 1.
+
+How they were made, in case they need regenerating: the backdrop is an
+ffmpeg-generated abstract gradient, so there is no third-party content to
+license. The control and the popup in the images are the real `src/content.js`
+and `src/popup.js` rendered in a browser, not a mockup, so the screenshots
+cannot drift from what the extension actually looks like. Each carries a
+headline, because at carousel-thumbnail size the headline is what a reader can
+actually make out — the control itself is only legible at full size.
+
+`docs/popup.png` is the same popup at natural size, portrait, for the README.
 
 ## Other fields
 
