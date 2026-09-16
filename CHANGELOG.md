@@ -3,9 +3,9 @@
 Notable changes to Presto. Versions follow [semantic versioning](https://semver.org),
 and every submission to an add-on store needs a new version number.
 
-## 1.0.0 — unreleased
+## 1.0.0 — 2026-09-15
 
-First release. Add the date here when it is approved by the store.
+First release, published on [addons.mozilla.org](https://addons.mozilla.org/en-US/firefox/addon/presto-video-speed-control/).
 
 ### Added
 

@@ -8,6 +8,6 @@ module.exports = {
     '.github', '.github/**',
     'icons/icon.svg',
     'web-ext-config.cjs',
-    'README.md', 'CHANGELOG.md', 'SECURITY.md',
+    'README.md', 'CONTRIBUTING.md', 'CHANGELOG.md', 'SECURITY.md',
   ],
 };
