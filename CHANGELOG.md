@@ -16,8 +16,15 @@ and every submission to an add-on store needs a new version number.
   the two, so no action is ever left unreachable. Like the step size, the
   bindings follow your browser profile.
 
+- Firefox for Android is now declared as a supported application, so the add-on
+  can be installed there at all. The listing offered it to desktop Firefox only.
+
 ### Fixed
 
+- The toolbar popup was unusable on Firefox for Android. It has no window to be
+  sized to there, so without a viewport declaration it was laid out at the
+  default desktop width and scaled down to an unreadable column in the corner
+  of the screen.
 - The shortcuts did nothing on keyboard layouts where `[`, `]` and `\` are typed
   with AltGr, which covers the German, French, Nordic and several other layouts.
   AltGr is reported as Ctrl+Alt on Windows and Linux, and Presto discarded any

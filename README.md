@@ -37,7 +37,7 @@ same way.
 
 The step defaults to 0.25. Set it from the toolbar popup, or cycle it with `;`
 through 0.05, 0.1, 0.25, 0.5 and 1. Either way the choice is saved and follows
-your browser profile. The popup is also where the shortcuts are written down.
+your browser profile, as the speed and the key bindings do.
 
 ## Install
 
@@ -50,18 +50,24 @@ unpacked*, and select this folder.
 Content scripts only inject into pages loaded after the extension is installed,
 so reload any tab you already had open.
 
+On Android there is no keyboard, so the control on the video is the whole
+interface: tap `<<` and `>>` to change speed and tap the readout to return to
+1x. The step size is set from the popup, reached through the browser menu under
+*Extensions*.
+
 | Browser | Status |
 |---------|--------|
 | Chrome, Edge, Brave, and other Chromium browsers | Supported |
 | Firefox 142 and later | Supported |
-| Firefox for Android 142 and later | Expected to work, untested |
+| Firefox for Android 142 and later | Supported |
 | Safari | Needs separate packaging, not attempted |
 
 ## Privacy
 
 Presto collects and transmits nothing. It has no background worker, no
 analytics, and makes no network requests of any kind. Its one permission is
-`storage`, used to remember your step size and nothing else.
+`storage`, which holds three things and nothing else: your step size, the speed
+you last chose, and your key bindings.
 
 ## Contributing
 

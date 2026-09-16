@@ -15,8 +15,14 @@
 }
 
 body {
-  width: 264px;
-  margin: 0;
+  /* Sizes the popup window on desktop: 292px border-box is the same total as
+     the 264px content-box this used to be, so desktop is unchanged. On Android
+     the popup is a full-screen page, so cap the width and centre it rather than
+     leaving a narrow column hard against the left edge. */
+  width: 292px;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
   padding: 14px;
   background: var(--bg);
   color: var(--fg);
