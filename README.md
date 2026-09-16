@@ -60,7 +60,7 @@ interface: tap `<<` and `>>` to change speed and tap the readout to return to
 | Chrome, Edge, Brave, and other Chromium browsers | Supported |
 | Firefox 142 and later | Supported |
 | Firefox for Android 142 and later | Supported |
-| Safari | Needs separate packaging, not attempted |
+| Safari | Coming soon |
 
 ## Privacy
 
