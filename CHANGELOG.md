@@ -3,7 +3,9 @@
 Notable changes to Presto. Versions follow [semantic versioning](https://semver.org),
 and every submission to an add-on store needs a new version number.
 
-## Unreleased
+## 1.1.0 — unreleased
+
+Add the date here when it is approved by the store.
 
 ### Added
 
@@ -15,7 +17,6 @@ and every submission to an add-on store needs a new version number.
   one you want instead. Binding a key that another action already uses trades
   the two, so no action is ever left unreachable. Like the step size, the
   bindings follow your browser profile.
-
 - Firefox for Android is now declared as a supported application, so the add-on
   can be installed there at all. The listing offered it to desktop Firefox only.
 

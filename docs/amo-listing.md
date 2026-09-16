@@ -239,7 +239,24 @@ actually make out — the control itself is only legible at full size.
 - **Privacy policy**: not needed. The manifest declares no data collection, and
   the description and developer comments both say so.
 - **Release notes**: empty on 1.0.0. From the next version onward, paste the
-  matching section of `CHANGELOG.md` at submission time.
+  matching section of `CHANGELOG.md` at submission time. The 1.1.0 text is
+  below, already written for users rather than developers.
+
+## Release notes — 1.1.0, TO PASTE AT SUBMISSION
+
+The field takes Markdown, like the description. Users read this in the add-on's
+version history and in the update notice, so it says what changed for them and
+leaves the reasoning to `CHANGELOG.md`.
+
+```
+**Your speed is remembered.** Set a lecture to 2x and the next video starts at 2x, instead of dropping back to normal every time. Press `\` or click the speed readout to return to 1x, which is remembered the same way.
+
+**Every shortcut can be rebound.** Open the toolbar popup, click a key, and press the one you want instead. If you choose a key another action already uses, the two swap places rather than collide.
+
+**Fixed: the shortcuts did nothing on many European keyboards.** On German, French, Nordic and similar layouts, `[`, `]` and `\` are typed with AltGr, and Presto was discarding those presses. It no longer does.
+
+**Firefox for Android is now supported.** The add-on can be installed on Android, and the popup is readable there instead of being squeezed into a corner of the screen.
+```
 
 ## Where each field lives
 
