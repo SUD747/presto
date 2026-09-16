@@ -1,5 +1,5 @@
 // Presto: playback speed control for any video or audio, on any site.
-// Keys: [ slower, ] faster, \ reset/restore, ; change the step size.
+// Keys: [ slower, ] faster, \ reset/restore, ; change the step size, all rebindable.
 // Or use the on-video control.
 //
 // Every frame runs its own copy of this script, isolated from the others, so a
@@ -32,7 +32,7 @@ function nextStep(current) {
 }
 
 // The top frame owns all three. Child frames keep copies only to render them.
-let desired = 1, previous = 1, step = DEFAULT_STEP;
+let desired = 1, previous = 1, step = DEFAULT_STEP, keys = { ...DEFAULT_KEYS };
 
 // The step is a saved setting, edited from the popup or cycled with a key. Any
 // frame may fail to reach extension storage, in which case the default stands
@@ -54,9 +54,11 @@ function saveSpeed(value) {
 }
 
 try {
-  chrome.storage.sync.get({ [STEP_KEY]: DEFAULT_STEP, [SPEED_KEY]: 1 }, saved => {
+  chrome.storage.sync.get({ [STEP_KEY]: DEFAULT_STEP, [SPEED_KEY]: 1, [KEYS_KEY]: DEFAULT_KEYS }, saved => {
     if (chrome.runtime.lastError) return;
     if (STEPS.includes(saved[STEP_KEY])) step = saved[STEP_KEY];
+    keys = validKeys(saved[KEYS_KEY]);
+    retitle();
     // Every frame restores the speed for itself rather than waiting on a
     // broadcast from the top frame, so an iframe that loads late cannot miss it.
     const speed = validSpeed(saved[SPEED_KEY]);
@@ -65,6 +67,9 @@ try {
   chrome.storage.onChanged.addListener(changes => {
     const c = changes[STEP_KEY];
     if (c && STEPS.includes(c.newValue)) { step = c.newValue; flashStep(); }
+    // Rebinding from the popup takes effect in open tabs straight away; waiting
+    // for a reload would look like the new key simply did not work.
+    if (changes[KEYS_KEY]) { keys = validKeys(changes[KEYS_KEY].newValue); retitle(); }
   });
 } catch (e) { /* default stands */ }
 
@@ -165,7 +170,7 @@ function mount(el) {
   const slower = document.createElement('button');
   slower.textContent = '<<';
   slower.dataset.d = '-1';
-  slower.title = 'Slower  [';
+  slower.title = `Slower  ${keys.slower}`;
 
   const val = document.createElement('div');
   val.className = 'val';
@@ -174,7 +179,7 @@ function mount(el) {
   const faster = document.createElement('button');
   faster.textContent = '>>';
   faster.dataset.d = '1';
-  faster.title = 'Faster  ]';
+  faster.title = `Faster  ${keys.faster}`;
 
   bar.append(slower, val, faster);
   root.append(style, bar);
@@ -187,6 +192,7 @@ function mount(el) {
   });
   overlays.set(el, host);
   host.__val = val;
+  host.__btns = { slower, faster };
   // Players resize without a window resize: theater mode, rotation, layout shift.
   host.__ro = new ResizeObserver(sync);
   host.__ro.observe(el);
@@ -203,13 +209,22 @@ function flashStep() {
   sync();
 }
 
+// Tooltips name the keys, so they go stale the moment a binding changes.
+function retitle() {
+  for (const [el, host] of overlays) {
+    host.__btns.slower.title = `Slower  ${keys.slower}`;
+    host.__btns.faster.title = `Faster  ${keys.faster}`;
+    label(el);
+  }
+}
+
 function label(el) {
   const host = overlays.get(el);
   if (!host) return;
   host.__val.textContent = Date.now() < flashUntil
     ? `±${step}`
     : `${Math.round(el.playbackRate * 100) / 100}x`;
-  host.__val.title = `Step ${step}, press ; to change it. Click to reset to 1x.`;
+  host.__val.title = `Step ${step}, press ${keys.step} to change it. Click to reset to 1x.`;
 }
 
 function place(el, host) {
@@ -275,15 +290,19 @@ if (document.readyState !== 'loading') scan();
 // --- keys ----------------------------------------------------------------
 
 addEventListener('keydown', e => {
-  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  // AltGr reports as Ctrl+Alt on Windows and Linux, and [ ] \ all sit behind
+  // AltGr on German, French, Nordic and other layouts. Treating that as a real
+  // Ctrl+Alt chord made the default keys untypable across much of Europe.
+  const altGr = e.getModifierState && e.getModifierState('AltGraph');
+  if ((e.ctrlKey || e.metaKey || e.altKey) && !altGr) return;
   const t = e.target;
   if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
 
   let dir;
-  if (e.key === ']') dir = 1;
-  else if (e.key === '[') dir = -1;
-  else if (e.key === '\\') dir = 'toggle';
-  else if (e.key === ';') dir = 'step';
+  if (e.key === keys.faster) dir = 1;
+  else if (e.key === keys.slower) dir = -1;
+  else if (e.key === keys.toggle) dir = 'toggle';
+  else if (e.key === keys.step) dir = 'step';
   else return;
 
   e.preventDefault();

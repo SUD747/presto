@@ -20,6 +20,11 @@ back again. It fades when you are not pointing at it.
 | `\` | toggle between 1x and your last speed |
 | `;` | change the step size |
 
+Any of them can be changed: open the toolbar popup, click a key, and press the
+one you want instead. If you pick a key another action already uses, the two
+trade places rather than collide. This matters on layouts where `[`, `]` and
+`\` sit behind AltGr, which is most of continental Europe.
+
 Speed ranges from 0.25x to 16x. Chrome mutes audio above roughly 4x, which is
 the browser's behaviour, not this extension's.
 

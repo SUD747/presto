@@ -11,6 +11,17 @@ and every submission to an add-on store needs a new version number.
   open starts at 2x, instead of back at normal speed. Press `\` or click the
   speed readout to return to 1x, which is remembered in the same way. The speed
   follows your browser profile alongside the step size.
+- Every shortcut can be rebound. Click a key in the toolbar popup and press the
+  one you want instead. Binding a key that another action already uses trades
+  the two, so no action is ever left unreachable. Like the step size, the
+  bindings follow your browser profile.
+
+### Fixed
+
+- The shortcuts did nothing on keyboard layouts where `[`, `]` and `\` are typed
+  with AltGr, which covers the German, French, Nordic and several other layouts.
+  AltGr is reported as Ctrl+Alt on Windows and Linux, and Presto discarded any
+  keypress carrying a modifier, so the default keys could not be typed at all.
 
 ## 1.0.0 — 2026-09-15
 

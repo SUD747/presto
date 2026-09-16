@@ -10,12 +10,14 @@ const bounds = src.match(/^const MIN = .*$/m);
 const speedFn = src.match(/^function nextSpeed[\s\S]*?^}/m);
 const stepFn = src.match(/^function nextStep[\s\S]*?^}/m);
 const validFn = src.match(/^function validSpeed[\s\S]*?^}/m);
-assert(consts && bounds && speedFn && stepFn && validFn,
+const defaultKeys = shared.match(/^const DEFAULT_KEYS = .*$/m);
+const keysFn = shared.match(/^function validKeys[\s\S]*?^}/m);
+assert(consts && bounds && speedFn && stepFn && validFn && defaultKeys && keysFn,
   'src/content.js or src/steps.js no longer has the shape test/unit.js extracts from');
 
-const { nextSpeed, nextStep, validSpeed, STEPS, MIN, MAX } = new Function(
-  `${consts[0]}\n${bounds[0]}\n${speedFn[0]}\n${stepFn[0]}\n${validFn[0]}
-   return { nextSpeed, nextStep, validSpeed, STEPS, MIN, MAX };`)();
+const { nextSpeed, nextStep, validSpeed, validKeys, DEFAULT_KEYS, STEPS, MIN, MAX } = new Function(
+  `${consts[0]}\n${bounds[0]}\n${defaultKeys[0]}\n${speedFn[0]}\n${stepFn[0]}\n${validFn[0]}\n${keysFn[0]}
+   return { nextSpeed, nextStep, validSpeed, validKeys, DEFAULT_KEYS, STEPS, MIN, MAX };`)();
 
 // Speed
 assert.strictEqual(nextSpeed(1, 0.25), 1.25, 'one quarter step up from normal');
@@ -75,5 +77,36 @@ for (const s of STEPS) {
     assert.strictEqual(validSpeed(v), v, `stepping by ${s} produced an unstorable speed ${v}`);
   }
 }
+
+// Rebindable keys. A bad set must fall back whole rather than half-apply: a
+// duplicate binding would make one action permanently unreachable.
+const actions = Object.keys(DEFAULT_KEYS);
+assert.strictEqual(actions.length, 4, 'four actions can be rebound');
+assert.strictEqual(new Set(Object.values(DEFAULT_KEYS)).size, actions.length,
+  'the defaults themselves must not collide');
+assert.deepStrictEqual(validKeys(DEFAULT_KEYS), DEFAULT_KEYS, 'the defaults survive a round trip');
+
+const custom = { faster: 'e', slower: 'q', toggle: 'w', step: 'r' };
+assert.deepStrictEqual(validKeys(custom), custom, 'a full custom set survives');
+assert.deepStrictEqual(validKeys({ ...custom, faster: 'ArrowUp' }), { ...custom, faster: 'ArrowUp' },
+  'a named key is a valid binding');
+
+// One missing or unusable action falls back for that action alone...
+assert.deepStrictEqual(validKeys({ ...custom, step: undefined }),
+  { ...custom, step: DEFAULT_KEYS.step }, 'a missing binding falls back to its default');
+assert.deepStrictEqual(validKeys({ ...custom, step: 42 }),
+  { ...custom, step: DEFAULT_KEYS.step }, 'a non-string binding falls back');
+assert.deepStrictEqual(validKeys({ ...custom, step: '' }),
+  { ...custom, step: DEFAULT_KEYS.step }, 'an empty binding falls back');
+
+// ...unless the result collides, in which case the whole set is untrustworthy.
+assert.deepStrictEqual(validKeys({ faster: 'e', slower: 'e', toggle: 'w', step: 'r' }), DEFAULT_KEYS,
+  'a duplicate binding rejects the whole set');
+assert.deepStrictEqual(validKeys(null), DEFAULT_KEYS, 'nothing saved yet means the defaults');
+assert.deepStrictEqual(validKeys('nope'), DEFAULT_KEYS, 'a non-object means the defaults');
+assert.deepStrictEqual(validKeys({}), DEFAULT_KEYS, 'an empty object means the defaults');
+// Mutating the result must not corrupt the defaults for the next caller.
+validKeys(null).faster = 'zzz';
+assert.strictEqual(validKeys(null).faster, DEFAULT_KEYS.faster, 'the fallback is a fresh copy');
 
 console.log('ok');
