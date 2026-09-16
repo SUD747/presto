@@ -185,28 +185,37 @@ the visitor at the top of the page — but deploy first if you can.
 
 ## Developer comments — LIVE
 
-Currently empty. The permissions block on the listing reads *"Access your data
-for all websites"*, the most alarming string AMO prints, and nothing on the page
-answers it. This is the cheapest conversion win available: someone who wants the
-feature and bounces on that line is a lost install.
+Rendered directly above the "Permissions and data" block, which is generated
+from the manifest and **cannot be changed by any listing edit**. As long as the
+content script matches `<all_urls>`, AMO prints "Access your data for all
+websites". This text sits beside that line; it does not replace it.
 
-The point it has to land is **needing access to pages is not the same as
-collecting data from them**. Keep implementation detail out.
+Only the first paragraph shows before AMO truncates with "Read more", so the
+reassurance goes first and the explanation second. An earlier draft opened with
+why the permission is needed, which buried the part that actually calms a
+hesitant visitor.
 
-Every claim below is verified against the source: `grep` finds no `fetch`,
-`XMLHttpRequest`, `WebSocket`, or `sendBeacon` anywhere in `src/`; the manifest
-declares exactly one permission (`storage`) and `data_collection: none`; and the
-only key written is the step size. The "follows your Firefox profile" clause is
-deliberate — `chrome.storage.sync` does leave the device, so claiming nothing
-ever does would be wrong.
+Kept free of feature description — the listing description already covers what
+Presto does, and repeating it here wastes the visible lines.
 
 ```
-Presto needs access to all websites because a speed control that only worked on a fixed list of sites would not do its job. It has to find the video on whatever page you are watching it on, including players embedded from somewhere else.
+Presto collects nothing. No analytics, no telemetry, and no network requests of any kind, so nothing about what you watch, or where you watch it, ever leaves your browser.
 
-Access to a page is not the same as collecting anything from it. Presto has no analytics and makes no network requests of any kind, so nothing about what you watch or where you watch it ever leaves your browser. The only thing it stores is the step size you choose, which follows your Firefox profile like any other setting.
+Reaching a page is not the same as taking anything from it. The all-sites permission is only how the control finds the video on whatever page you have open; a speed controller limited to a fixed list of sites would not do its job.
 
-The whole source is on GitHub under the MIT license, and it is short enough to read: https://github.com/SUD747/presto
+The only thing stored is your own settings, and they stay in your browser profile.
+
+You do not have to take my word for any of this. The whole extension is one short, unminified script under the MIT license: https://github.com/SUD747/presto
 ```
+
+For context, the same permission warning appears on both market leaders, which
+ask for more than Presto does:
+
+| Add-on | Daily users | Permissions |
+|---|---|---|
+| Video Speed Controller | 102,066 | `storage`, `http://*/*`, `https://*/*`, `file:///*` |
+| Global Speed | 56,668 | `storage`, `webNavigation`, `scripting`, `contextMenus`, all-sites |
+| **Presto** | **0** | **`storage`, `<all_urls>`** |
 
 ## Screenshots — LIVE IN THE REPO, NOT YET UPLOADED
 
