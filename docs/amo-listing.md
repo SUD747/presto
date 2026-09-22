@@ -1,6 +1,11 @@
 # Add-on listing copy
 
-Paste-ready text for the addons.mozilla.org submission form.
+Paste-ready text for the addons.mozilla.org listing. This file is the source of
+truth: change it in the same commit as any Developer Hub edit, so it never
+drifts from what is published.
+
+Fields marked **LIVE** match the published listing. Fields marked **TO SET** are
+pending in the Developer Hub.
 
 ## Name
 
@@ -14,29 +19,60 @@ The toolbar popup and this repository keep the short form, "Presto". Only the
 store listing needs the descriptive tail, so that people searching for a speed
 controller find it.
 
-## Categories
+## Categories — LIVE
 
-**Photos, Music & Videos.** It is the only category that fits, and it is where
-people browsing for a player tool will look. Add **Other** as a second choice
-only if the form insists on two.
+The listing currently sits in **Other**, which is not a category anyone looking
+for a speed controller would browse. Every competitor with real users is in
+Photos, Music & Videos:
 
-## Add-on URL (slug)
+| Add-on | Daily users | Categories |
+|---|---|---|
+| Video Speed Controller | 102,066 | appearance, photos-music-videos, social-communication |
+| Global Speed | 56,668 | photos-music-videos |
+| Presto (now) | 0 | other |
+
+Set to **Photos, Music & Videos** + **Games & Entertainment**, and Other
+removed. The form allows up to 3.
+
+Found in: Developer Hub → Edit Product Page → **Describe Add-on**.
+
+## Add-on URL (slug) — LIVE
 
 ```
-presto-video-speed
+presto-video-speed-control
 ```
 
-## Summary
+This differs from the value originally drafted here (`presto-video-speed`).
+**Do not change it.** The published URL is already in the README, CHANGELOG,
+the GitHub release, and the product page; changing the slug breaks all of them.
 
-Shown in search results. The limit is 250 characters.
+## Summary — LIVE
+
+Shown in search results. What is published differs from the text originally
+drafted here; the published version is good and is recorded as-is. Do not
+rewrite it without a reason.
 
 ```
-Playback speed control for every video on the web, not just YouTube. A control sits on each video, plus keyboard shortcuts. Works inside embedded players, and holds your speed through ad breaks and quality changes.
+Control video and audio playback speed on any website, including embedded players. Use on-video controls or keyboard shortcuts to speed up, slow down, and adjust playback instantly.
 ```
 
-## Description
+## Description — DRAFTED, NOT LIVE
 
-AMO accepts a little HTML here: `<b>`, `<i>`, `<a>`, `<ul>`, `<li>`, `<br>`.
+**The published description is not this text.** What is live opens with
+"Control video playback at your own pace." and uses a six-item feature list. It
+reads well and nothing in the current plan calls for replacing it, so it has
+been left alone.
+
+The version below is the longer draft originally written here. It is more
+specific — it spells out the shortcut keys, the speed range, and why the speed
+survives ad breaks. Worth considering at the next listing edit, but that is a
+judgement call, not a pending task.
+
+**If it is ever used, it needs converting first.** The draft below is written in
+HTML (`<b>`, `<ul>`, `<li>`). The Developer Hub field is **Markdown** — it says
+"Some Markdown supported" and the live description is stored as `**bold**` and
+`### Features`. The API returns rendered HTML, which is what made the HTML
+assumption look right.
 
 ```
 Presto puts a small speed control in the corner of every video you watch, on any site.
@@ -71,16 +107,177 @@ Presto collects nothing and sends nothing anywhere. It has no analytics and make
 Presto is free and open source under the MIT license.
 ```
 
-## Screenshots
+## Tags — LIVE
 
-Upload both, in this order:
+**Tags are a fixed vocabulary of 42 checkboxes, not free text.** An earlier
+draft of this file listed `video`, `speed`, `playback`, `audio`, `podcast`,
+`education` and `accessibility` — **none of those exist as tags.** Do not plan
+around invented tags again; the list is below.
 
-1. `docs/screenshot.png` — the control on a real video
-2. `docs/popup.png` — the settings popup
+Set (8 of a maximum 10), each one true of the add-on:
+
+```
+youtube
+streaming
+music
+twitch
+dailymotion
+facebook
+reddit
+social media
+```
+
+Deliberately left off:
+
+- `mp3`, `video downloader`, `video converter`, `download` — Presto does not
+  touch files. Claiming these would be tag-spam.
+- `privacy` — means privacy *tools* (blockers, VPNs). Presto is private, but it
+  is not a privacy tool.
+- `whatsapp` — Global Speed uses it, and speeding up voice notes is a real use
+  case, but it has not been tested. Add it once someone confirms it works.
+- `zoom` — refers to the Zoom app, not video zoom.
+
+The full available vocabulary, for future reference:
+
+```
+ad blocker, anti malware, anti tracker, antivirus, chat, container,
+content blocker, coupon, dailymotion, dark mode, dndbeyond, download, facebook,
+google, image search, mp3, music, password manager, pinterest, pixiv, privacy,
+reddit, roblox, scholar, search, security, shopping, social media, streaming,
+torrent, translate, twitch, twitter, user scripts, video converter,
+video downloader, vpn, wayback machine, whatsapp, word counter, youtube, zoom
+```
+
+Found in: Developer Hub → Edit Product Page → **Additional Details**.
+
+## Add-on links — LIVE
+
+Only a support *email* is published right now, which puts the address in the
+clear and gives a visitor nowhere to look.
+
+- **Homepage**
+
+  ```
+  https://sud747.github.io/projects/presto/
+  ```
+
+- **Support site**
+
+  ```
+  https://sud747.github.io/projects/presto/#feedback
+  ```
+
+The product page is the homepage rather than the bare repository because it
+carries an install call-to-action and plain-language copy, and links to the
+source itself — a non-technical visitor dropped into a source tree is lost.
+
+Support points at that page's own feedback form rather than GitHub issues: it
+takes a bug report with **no account required** and reaches the same inbox,
+while still linking out to issues for anyone who prefers to track it there.
+Both URLs use the trailing-slash form, which is the canonical after the site's
+`trailingSlash` export fix.
+
+Sequencing: the `#feedback` anchor comes from `id="feedback"` on the section in
+`app/projects/[slug]/page.tsx` in the `SUD747.github.io` repository. Both that
+and the `trailingSlash` fix need to reach `main` and deploy before these URLs
+behave as intended. Neither breaks if set early — a missing anchor just lands
+the visitor at the top of the page — but deploy first if you can.
+
+## Developer comments — LIVE
+
+Rendered directly above the "Permissions and data" block, which is generated
+from the manifest and **cannot be changed by any listing edit**. As long as the
+content script matches `<all_urls>`, AMO prints "Access your data for all
+websites". This text sits beside that line; it does not replace it.
+
+Only the first paragraph shows before AMO truncates with "Read more", so the
+reassurance goes first and the explanation second. An earlier draft opened with
+why the permission is needed, which buried the part that actually calms a
+hesitant visitor.
+
+Kept free of feature description — the listing description already covers what
+Presto does, and repeating it here wastes the visible lines.
+
+```
+Presto collects nothing. No analytics, no telemetry, and no network requests of any kind, so nothing about what you watch, or where you watch it, ever leaves your browser.
+
+Reaching a page is not the same as taking anything from it. The all-sites permission is only how the control finds the video on whatever page you have open; a speed controller limited to a fixed list of sites would not do its job.
+
+The only thing stored is your own settings, and they stay in your browser profile.
+
+You do not have to take my word for any of this. The whole extension is one short, unminified script under the MIT license: https://github.com/SUD747/presto
+```
+
+For context, the same permission warning appears on both market leaders, which
+ask for more than Presto does:
+
+| Add-on | Daily users | Permissions |
+|---|---|---|
+| Video Speed Controller | 102,066 | `storage`, `http://*/*`, `https://*/*`, `file:///*` |
+| Global Speed | 56,668 | `storage`, `webNavigation`, `scripting`, `contextMenus`, all-sites |
+| **Presto** | **0** | **`storage`, `<all_urls>`** |
+
+## Screenshots — LIVE IN THE REPO, NOT YET UPLOADED
+
+Three, all 1280x800 so the carousel is not ragged, all generated from the real
+extension rather than mocked up. Upload in this order:
+
+1. `docs/screenshot.png` — the control on a video, reading 2x
+2. `docs/store-popup.png` — the popup: step sizes and the rebindable shortcuts
+3. `docs/store-embedded.png` — the control inside an embedded player
+
+The previews currently published are the old pair and should be replaced.
+
+These fix the problems recorded earlier: the old preview 1 used third-party
+video content with a hand-drawn arrow and the control was invisible at thumbnail
+size, and preview 2 was portrait and a quarter the width of preview 1.
+
+How they were made, in case they need regenerating: the backdrop is an
+ffmpeg-generated abstract gradient, so there is no third-party content to
+license. The control and the popup in the images are the real `src/content.js`
+and `src/popup.js` rendered in a browser, not a mockup, so the screenshots
+cannot drift from what the extension actually looks like. Each carries a
+headline, because at carousel-thumbnail size the headline is what a reader can
+actually make out — the control itself is only legible at full size.
+
+`docs/popup.png` is the same popup at natural size, portrait, for the README.
 
 ## Other fields
 
-- **License**: MIT
-- **Privacy policy**: not needed. The manifest already declares that no data is
-  collected, and the description says so.
-- **Support site**: the GitHub repository, once it exists.
+- **License**: MIT — LIVE.
+- **Privacy policy**: not needed. The manifest declares no data collection, and
+  the description and developer comments both say so.
+- **Release notes**: empty on 1.0.0. From the next version onward, paste the
+  matching section of `CHANGELOG.md` at submission time. The 1.1.0 text is
+  below, already written for users rather than developers.
+
+## Release notes — 1.1.0, TO PASTE AT SUBMISSION
+
+The field takes Markdown, like the description. Users read this in the add-on's
+version history and in the update notice, so it says what changed for them and
+leaves the reasoning to `CHANGELOG.md`.
+
+```
+**Your speed is remembered.** Set a lecture to 2x and the next video starts at 2x, instead of dropping back to normal every time. Press `\` or click the speed readout to return to 1x, which is remembered the same way.
+
+**Every shortcut can be rebound.** Open the toolbar popup, click a key, and press the one you want instead. If you choose a key another action already uses, the two swap places rather than collide.
+
+**Fixed: the shortcuts did nothing on many European keyboards.** On German, French, Nordic and similar layouts, `[`, `]` and `\` are typed with AltGr, and Presto was discarding those presses. It no longer does.
+
+**Firefox for Android is now supported.** The add-on can be installed on Android, and the popup is readable there instead of being squeezed into a corner of the screen.
+```
+
+## Where each field lives
+
+The Developer Hub splits the listing across three separately-saved forms, which
+is not obvious:
+
+| Form | Fields |
+|---|---|
+| **Describe Add-on** | Name, Add-on URL, Summary, Description, Categories, support Email, support Website |
+| **Additional Details** | Tags, Contributions URL, Default Locale, **Homepage** |
+| **Technical Details** | **Developer Comments**, UUID, Whiteboard |
+
+Homepage and the support Website are in different forms, and "Website" under
+Describe Add-on is the *support* site, not the homepage. Each form has its own
+Save Changes button.

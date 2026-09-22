@@ -29,10 +29,24 @@ applies a speed on its own.
 phase and stops propagation, so it wins against players that bind their own
 shortcuts. It bails out when you are typing in a field.
 
+A modifier normally means the press is not ours, but AltGr is reported as
+Ctrl+Alt on Windows and Linux, and `[`, `]` and `\` are AltGr combinations on
+the German, French and Nordic layouts. Discarding those made the defaults
+untypable across much of Europe, so a press whose `AltGraph` modifier state is
+set is admitted while a genuine Ctrl+Alt chord is still ignored. Every binding
+can also be changed from the popup, which is the other half of the same
+problem.
+
 The control is positioned over each video rather than inserted into the player's
 own markup, which keeps it from breaking sites that rebuild their controls. The
 popup and the content script reach each other through extension storage, which
 is why there is no background service worker.
+
+Storage holds the step size, the last speed and the key bindings. Everything
+read back out of it goes through a validator first, because a value can arrive
+from an older version or a half-synced profile: an out-of-range speed would
+throw when assigned to `playbackRate`, and a duplicate key binding would leave
+one action permanently unreachable.
 
 ## Layout
 
@@ -43,7 +57,8 @@ puts in the zip.
 
 ```
 manifest.json          must sit at the repository root
-src/steps.js           the step sizes, shared by the content script and popup
+src/steps.js           step sizes, default key bindings and their validation,
+                       shared by the content script and the popup
 src/content.js         everything that happens on the page
 src/popup.html         the toolbar panel
 src/popup.css
@@ -55,7 +70,8 @@ LICENSE
 **Testing.** Never shipped.
 
 ```
-test/unit.js           node test/unit.js, the speed and step arithmetic
+test/unit.js           node test/unit.js, the speed and step arithmetic, and
+                       the validation of anything read back out of storage
 test/page.html         manual harness: iframes, shadow DOM, late-added video
 test/clip.mp4          a 20 second clip with a visible frame counter
 ```

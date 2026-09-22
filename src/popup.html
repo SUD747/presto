@@ -1,5 +1,9 @@
 <!doctype html>
 <meta charset="utf-8">
+<!-- Firefox for Android opens the popup as a full-screen page rather than a
+     sized window. Without this it is laid out at the default ~980px desktop
+     width and scaled down to an unreadable column in the corner. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Presto</title>
 <link rel="stylesheet" href="popup.css">
 
@@ -15,17 +19,14 @@
 </section>
 
 <section>
-  <h2>Shortcuts</h2>
-  <dl>
-    <dt><kbd>]</kbd></dt><dd>Faster by one step</dd>
-    <dt><kbd>[</kbd></dt><dd>Slower by one step</dd>
-    <dt><kbd>\</kbd></dt><dd>Toggle 1x and your last speed</dd>
-    <dt><kbd>;</kbd></dt><dd>Cycle the step size</dd>
-  </dl>
+  <h2 id="keys-label">Shortcuts</h2>
+  <p class="hint">Click a key, then press the one you want instead.</p>
+  <dl class="keys" aria-labelledby="keys-label"></dl>
 </section>
 
 <footer>Works on every video and audio element, in any frame. Speed holds from
-0.25x to 16x.</footer>
+0.25x to 16x, and the speed you pick carries over to the next video you
+open. Press <kbd>\</kbd> to drop back to 1x.</footer>
 
 <script src="steps.js"></script>
 <script src="popup.js"></script>
